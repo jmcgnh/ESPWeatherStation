@@ -1,0 +1,66 @@
+Skip to content
+This repository
+Search
+Pull requests
+Issues
+Marketplace
+Explore
+ @jmcgnh
+ Sign out
+ Unwatch 1
+  Star 0  Fork 0 jmcgnh/WeatherStation01
+ Code  Issues 0  Pull requests 0  Projects 0  Wiki  Insights  Settings
+Branch: master Find file Copy pathWeatherStation01/.gitignore
+7156b79  14 hours ago
+@jmcgnh jmcgnh Another possible name for the secrets file.
+1 contributor
+RawBlameHistory    
+37 lines (29 sloc)  315 Bytes
+# Don't give away secrets
+*.secret
+secret.h
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+© 2017 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+API
+Training
+Shop
+Blog
+About
