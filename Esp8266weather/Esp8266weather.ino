@@ -7,7 +7,11 @@
 
 #include <ESP8266WiFi.h>
 #include "DHT.h"
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP085_U.h>
 #include "secret.h" // defines IDs and PASSWDs
+
 
 #define DHTPIN          2   //Pin to attach the DHT - on D1 mini, what's labeled as D4 is GPIO2
 #define DHTTYPE DHT22       //type of DTH  
@@ -18,12 +22,22 @@ const char* password = SSIDPASSWD;
 const int sleepTimeS = 600; // in seconds; 18000 for Half hour, 300 for 5 minutes etc.
 const char vfname[] =  __FILE__ ;
 const char vtimestamp[] =  __DATE__ " " __TIME__;
+const char versionstring[] = "2017-12-31-0230-1";
 
 ///////////////Weather////////////////////////
-char server [] = "weatherstation.wunderground.com";
-char WEBPAGE [] = "/weatherstation/updateweatherstation.php";
-char ID [] = MYWUID;
-char PASSWORD [] = WUPASSWD;
+char wu_host [] = "weatherstation.wunderground.com";
+char wu_WEBPAGE [] = "/weatherstation/updateweatherstation.php";
+char wu_ID [] = MYWUID;
+char wu_PASSWORD [] = WUPASSWD;
+char WU_cert_fingerprint[] = "12 DB BB 24 8E 0F 6F D4 63 EC 45 DD 5B ED 37 D7 6F B1 5F E5";
+
+///////////////Phant////////////////////////
+//char host [] = "10.200.200.67";
+//char WEBPAGE [] = "/weatherstation/updateweatherstation.php";
+//char ID [] = MYWUID;
+//char PASSWORD [] = WUPASSWD;
+//char *WU_cert_fingerprint = "12 DB BB 24 8E 0F 6F D4 63 EC 45 DD 5B ED 37 D7 6F B1 5F E5";
+
 
 
 /////////////IFTTT/////////////////////// not currently used
@@ -37,6 +51,8 @@ char PASSWORD [] = WUPASSWD;
 //////////////////////////////////////////
 
 DHT dht(DHTPIN, DHTTYPE);
+
+Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 
 
 void setup()
@@ -54,8 +70,9 @@ void setup()
   Serial.println(vtimestamp);
   Serial.println();
 
+
   // Connect D0 to RST to wake up
-  // pinMode(D0, WAKEUP_PULLUP);
+  pinMode(D0, WAKEUP_PULLUP);
 
   // most of the time we will have been reconnected by now, so check for connection before .begin()
   // this avoids a problem that crops up when calling .begin() while already connected
@@ -73,6 +90,21 @@ void setup()
     Serial.println();
   }
   Serial.print("wifi status= ");     Serial.println(wifistatus);
+  Serial.println( "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+
+  // BMP test code
+  // Serial.println("Pressure Sensor Test"); Serial.println("");
+
+  /* Initialise the sensor */
+  if (!bmp.begin())
+  {
+    /* There was a problem detecting the BMP085 ... check your connections */
+    Serial.print("Ooops, no BMP085 detected ... Check your wiring or I2C ADDR!");
+  }
+
+  /* Display some basic information on this sensor */
+  // displaySensorDetails();
+
 }
 
 void loop() {
@@ -85,40 +117,112 @@ void loop() {
   // Serial.println("Low battery");
   // delay(500);
   //}
-  
+
+  float baromin;
+  float temp2f;
+
+  sensors_event_t event;
+  bmp.getEvent(&event);
+
+  /* Display the results (barometric pressure is measure in hPa) */
+  if (event.pressure)
+  {
+    /* Display atmospheric pressue (sensor gives it in hPa or millibars */
+    float baromhPa = event.pressure;
+    Serial.print("Pressure:    ");     Serial.print(baromhPa);   Serial.println(" hPa");
+    baromin = baromhPa * 0.0295300;
+    Serial.print("        :    ");     Serial.print(baromin);    Serial.println(" inHg");
+    float barommmhg = baromhPa * 0.750062;
+    Serial.print("        :    ");     Serial.print(barommmhg);  Serial.println(" mmHg");
+    
+    /* Calculating altitude with reasonable accuracy requires pressure    *
+       sea level pressure for your position at the moment the data is
+       converted, as well as the ambient temperature in degress
+       celcius.  If you don't have these values, a 'generic' value of
+       1013.25 hPa can be used (defined as SENSORS_PRESSURE_SEALEVELHPA
+       in sensors.h), but this isn't ideal and will give variable
+       results from one day to the next.
+     *                                                                    *
+       You can usually find the current SLP value by looking at weather
+       websites or from environmental information centers near any major
+       airport.
+     *                                                                    *
+       For example, for Paris, France you can check the current mean
+       pressure and sea level at: http://bit.ly/16Au8ol                   */
+
+    /* First we get the current temperature from the BMP085 */
+    float temperature;
+    bmp.getTemperature(&temperature);
+    Serial.print("Temperature: ");    Serial.print(temperature);  Serial.println(" C");
+    temp2f =  (temperature * 9.0) / 5.0 + 32.0;
+   
+    Serial.print("           : ");    Serial.print(temp2f);       Serial.println(" F");
+
+    /* Then convert the atmospheric pressure, and SLP to altitude         */
+    /* Update this next line with the current SLP for better results      */
+    float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
+    // Serial.print("Altitude:    ");
+    // Serial.print(bmp.pressureToAltitude(seaLevelPressure,
+    //                                    event.pressure));
+    // Serial.println(" m");
+    // Serial.println("");
+  }
+  else
+  {
+    Serial.println("Sensor error");
+  }
+  delay(1000);
+
   //Get sensor data
   float tempc = dht.readTemperature();
   float tempf =  (tempc * 9.0) / 5.0 + 32.0;
   float humidity = dht.readHumidity();
   float dewptf = dewPoint(tempf, humidity);
-  
+
   //local sensor data report
   Serial.println("+++++++++++++++++++++++++");
   Serial.print("tempF=     ");  Serial.print(tempf);    Serial.println(" *F");
   Serial.print("tempC=     ");  Serial.print(tempc);    Serial.println(" *C");
   Serial.print("dew point= ");  Serial.println(dewptf);
   Serial.print("humidity=  ");  Serial.println(humidity);
+  Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvv");
 
   //Send data to Weather Underground
   Serial.print("sending data to ");
-  Serial.println(server);
+  Serial.println(wu_host);
+  
+//   WiFiClientSecure client;
+//   if (!client.connect(wu_host, 443)) {
+//     Serial.println("Conection Fail");
+//    return;
+//  }
+//  if (client.verify(WU_cert_fingerprint, wu_host)) {
+//    Serial.println("certificate matches");
+//  } else {
+//    Serial.println("certificate doesn't match");
+//  }
+
   WiFiClient client;
-  if (!client.connect(server, 80)) {
+  if (!client.connect(wu_host, 80)) {
     Serial.println("Conection Fail");
     return;
   }
+
   // see http://wiki.wunderground.com/index.php/PWS_-_Upload_Protocol for details
-  client.print("GET ");            client.print(WEBPAGE);
-  client.print("?ID=");            client.print(ID);
-  client.print("&PASSWORD=");      client.print(PASSWORD);
+  client.print("GET ");            client.print(wu_WEBPAGE);
+  client.print("?ID=");            client.print(wu_ID);
+  client.print("&PASSWORD=");      client.print(wu_PASSWORD);
   client.print("&dateutc=");       client.print("now");
   client.print("&tempf=");         client.print(tempf);
+  client.print("&temp2f=");        client.print(temp2f);
   client.print("&dewptf=");        client.print(dewptf);
   client.print("&humidity=");      client.print(humidity);
-  client.print("&softwaretype=");  client.print("ESP8266%20version1");
+  client.print("&baromin=");       client.print(baromin);
+
+  client.print("&softwaretype=");  client.print("ESP8266%20version "); client.print(versionstring);
   client.print("&action=");        client.print("updateraw");
   client.println(" HTTP/1.1");
-  client.print("Host: ");          client.println(server);
+  client.print("Host: ");          client.println(wu_host);
   client.print("Connection: ");    client.println("close");
   client.println();
 
@@ -169,5 +273,27 @@ double dewPoint(double tempf, double humidity) //Calculate dew Point
 void sleepMode() {
   Serial.print("Going into deep sleep now...");
   ESP.deepSleep(sleepTimeS * 1000000);
+}
+
+/**************************************************************************/
+/*
+    Displays some basic information on this sensor from the unified
+    sensor API sensor_t type (see Adafruit_Sensor for more information)
+*/
+/**************************************************************************/
+void displaySensorDetails(void)
+{
+  sensor_t sensor;
+  bmp.getSensor(&sensor);
+  Serial.println("------------------------------------");
+  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
+  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
+  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
+  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" hPa");
+  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" hPa");
+  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" hPa");
+  Serial.println("------------------------------------");
+  Serial.println("");
+  delay(500);
 }
 
