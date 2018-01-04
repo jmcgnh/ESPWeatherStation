@@ -22,7 +22,7 @@ const char* password = SSIDPASSWD;
 const int sleepTimeS = 600; // in seconds; 18000 for Half hour, 300 for 5 minutes etc.
 const char vfname[] =  __FILE__ ;
 const char vtimestamp[] =  __DATE__ " " __TIME__;
-const char versionstring[] = "2018-01-04-1515-1";
+const char versionstring[] = "20180104.1630.1";
 
 ///////////////Weather////////////////////////
 char wu_host [] = "weatherstation.wunderground.com";
