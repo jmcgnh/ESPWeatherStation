@@ -160,7 +160,8 @@ void loop() {
 
     /* Then convert the atmospheric pressure, and SLP to altitude         */
     /* Update this next line with the current SLP for better results      */
-    float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
+//// Not using altitude
+    //float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
     // Serial.print("Altitude:    ");
     // Serial.print(bmp.pressureToAltitude(seaLevelPressure,
     //                                    event.pressure));
@@ -190,23 +191,25 @@ void loop() {
   //Send data to Weather Underground
   Serial.print("sending data to ");
   Serial.println(wu_host);
-  
-//   WiFiClientSecure client;
-//   if (!client.connect(wu_host, 443)) {
-//     Serial.println("Conection Fail");
-//    return;
-//  }
-//  if (client.verify(WU_cert_fingerprint, wu_host)) {
-//    Serial.println("certificate matches");
-//  } else {
-//    Serial.println("certificate doesn't match");
-//  }
 
-  WiFiClient client;
-  if (!client.connect(wu_host, 80)) {
-    Serial.println("Conection Fail");
+   // Using HTTPS protocol
+   WiFiClientSecure client;
+   if (!client.connect(wu_host, 443)) {
+     Serial.println("Conection Fail");
     return;
-  }
+   }
+   if (client.verify(WU_cert_fingerprint, wu_host)) {
+     Serial.println("certificate matches");
+   } else {
+     Serial.println("certificate doesn't match");
+   }
+
+//   // Using HTTP protocol
+//   WiFiClient client;
+//   if (!client.connect(wu_host, 80)) {
+//     Serial.println("Conection Fail");
+//     return;
+//   }
 
   // see http://wiki.wunderground.com/index.php/PWS_-_Upload_Protocol for details
 
