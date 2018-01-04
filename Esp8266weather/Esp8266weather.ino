@@ -22,7 +22,7 @@ const char* password = SSIDPASSWD;
 const int sleepTimeS = 600; // in seconds; 18000 for Half hour, 300 for 5 minutes etc.
 const char vfname[] =  __FILE__ ;
 const char vtimestamp[] =  __DATE__ " " __TIME__;
-const char versionstring[] = "2018-01-04-1200-1";
+const char versionstring[] = "2018-01-04-1515-1";
 
 ///////////////Weather////////////////////////
 char wu_host [] = "weatherstation.wunderground.com";
@@ -32,7 +32,7 @@ char wu_PASSWORD [] = WUPASSWD;
 char WU_cert_fingerprint[] = "12 DB BB 24 8E 0F 6F D4 63 EC 45 DD 5B ED 37 D7 6F B1 5F E5";
 
 ///////////////Phant////////////////////////
-//char host [] = "10.200.200.67";
+//char host [] = "10.XXX.XXX.XXX";
 //char WEBPAGE [] = "/weatherstation/updateweatherstation.php";
 //char ID [] = MYWUID;
 //char PASSWORD [] = WUPASSWD;
