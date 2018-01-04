@@ -210,31 +210,28 @@ void loop() {
 
   // see http://wiki.wunderground.com/index.php/PWS_-_Upload_Protocol for details
 
-  String PostData = "ID=";         PostData += wu_ID;
-        PostData += "&PASSWORD=";  PostData += wu_PASSWORD; 
-        PostData += "&dateutc="    "now";
-        PostData += "&tempf=";     PostData += tempf;
-        PostData += "&temp2f=";    PostData += temp2f;
-        PostData += "&dewptf=";    PostData += dewptf;
-        PostData += "&humidity=";  PostData += humidity;
-        PostData += "&baromin=";   PostData += baromin;
-        PostData += "&softwaretype=" "ESP8266%20WeatherStation02%20version%20";
-        PostData += versionstring;
-        PostData += "&action="    "updateraw" ;
-  Serial.println("PostData= " + PostData);
+  String ReqData = "ID=";         ReqData += wu_ID;
+        ReqData += "&PASSWORD=";  ReqData += wu_PASSWORD; 
+        ReqData += "&dateutc="    "now";
+        ReqData += "&tempf=";     ReqData += tempf;
+        ReqData += "&temp2f=";    ReqData += temp2f;
+        ReqData += "&dewptf=";    ReqData += dewptf;
+        ReqData += "&humidity=";  ReqData += humidity;
+        ReqData += "&baromin=";   ReqData += baromin;
+        ReqData += "&softwaretype=" "ESP8266%20WeatherStation02%20version%20";
+        ReqData += versionstring;
+        ReqData += "&action="    "updateraw" ;
+  Serial.println("ReqData= " + ReqData);
 
-  String PostReq = "POST ";        PostReq += wu_WEBPAGE; PostReq += " HTTP/1.1\r\n";
-  PostReq += "Host: ";             PostReq += wu_host;    PostReq += "\r\n";
-  PostReq += "Connection: "        "close"        "\r\n";
-  PostReq += "Content-Type: "      "application/x-www-form-urlencoded" "\r\n";
-  PostReq += "Content-Length: ";   PostReq += PostData.length();
-  PostReq += "\r\n\r\n"; // end of headers
-  PostReq += PostData;
-  PostReq += "\r\n"; // end of body
+  String WebReq = "GET ";        WebReq += wu_WEBPAGE;  WebReq += "?";
+  WebReq += ReqData;             WebReq += " HTTP/1.1\r\n";
+  WebReq += "Host: ";             WebReq += wu_host;    WebReq += "\r\n";
+  WebReq += "Connection: "        "close"        "\r\n";
+  WebReq += "\r\n\r\n"; // end of headers
 
-  Serial.println("PostReq= " + PostReq);
+  Serial.println("WebReq= " + WebReq);
 
-  client.print(PostReq);
+  client.print(WebReq);
   
   Serial.println("-----Response-----");
   while (client.connected())
