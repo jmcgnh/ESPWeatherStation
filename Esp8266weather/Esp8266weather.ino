@@ -118,8 +118,8 @@ void loop() {
   // delay(500);
   //}
 
-  float baromin;
-  float tempf;
+  float baromin = 100;
+  float tempf = 1000;
 
   sensors_event_t event;
   bmp.getEvent(&event);
@@ -209,23 +209,33 @@ void loop() {
   }
 
   // see http://wiki.wunderground.com/index.php/PWS_-_Upload_Protocol for details
-  client.print("GET ");            client.print(wu_WEBPAGE);
-  client.print("?ID=");            client.print(wu_ID);
-  client.print("&PASSWORD=");      client.print(wu_PASSWORD);
-  client.print("&dateutc=");       client.print("now");
-  client.print("&tempf=");         client.print(tempf);
-  client.print("&temp2f=");        client.print(temp2f);
-  client.print("&dewptf=");        client.print(dewptf);
-  client.print("&humidity=");      client.print(humidity);
-  client.print("&baromin=");       client.print(baromin);
 
-  client.print("&softwaretype=");  client.print("ESP8266%20WeatherStation02%20version%20"); client.print(versionstring);
-  client.print("&action=");        client.print("updateraw");
-  client.println(" HTTP/1.1");
-  client.print("Host: ");          client.println(wu_host);
-  client.print("Connection: ");    client.println("close");
-  client.println();
+  String PostData = "ID=";         PostData += wu_ID;
+        PostData += "&PASSWORD=";  PostData += wu_PASSWORD; 
+        PostData += "&dateutc="    "now";
+        PostData += "&tempf=";     PostData += tempf;
+        PostData += "&temp2f=";    PostData += temp2f;
+        PostData += "&dewptf=";    PostData += dewptf;
+        PostData += "&humidity=";  PostData += humidity;
+        PostData += "&baromin=";   PostData += baromin;
+        PostData += "&softwaretype=" "ESP8266%20WeatherStation02%20version%20";
+        PostData += versionstring;
+        PostData += "&action="    "updateraw" ;
+  Serial.println("PostData= " + PostData);
 
+  String PostReq = "POST ";        PostReq += wu_WEBPAGE; PostReq += " HTTP/1.1\r\n";
+  PostReq += "Host: ";             PostReq += wu_host;    PostReq += "\r\n";
+  PostReq += "Connection: "        "close"        "\r\n";
+  PostReq += "Content-Type: "      "application/x-www-form-urlencoded" "\r\n";
+  PostReq += "Content-Length: ";   PostReq += PostData.length();
+  PostReq += "\r\n\r\n"; // end of headers
+  PostReq += PostData;
+  PostReq += "\r\n"; // end of body
+
+  Serial.println("PostReq= " + PostReq);
+
+  client.print(PostReq);
+  
   Serial.println("-----Response-----");
   while (client.connected())
   {
