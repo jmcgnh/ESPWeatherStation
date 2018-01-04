@@ -22,7 +22,7 @@ const char* password = SSIDPASSWD;
 const int sleepTimeS = 600; // in seconds; 18000 for Half hour, 300 for 5 minutes etc.
 const char vfname[] =  __FILE__ ;
 const char vtimestamp[] =  __DATE__ " " __TIME__;
-const char versionstring[] = "2017-12-31-0230-1";
+const char versionstring[] = "2018-01-04-1200-1";
 
 ///////////////Weather////////////////////////
 char wu_host [] = "weatherstation.wunderground.com";
@@ -119,7 +119,7 @@ void loop() {
   //}
 
   float baromin;
-  float temp2f;
+  float tempf;
 
   sensors_event_t event;
   bmp.getEvent(&event);
@@ -154,9 +154,9 @@ void loop() {
     float temperature;
     bmp.getTemperature(&temperature);
     Serial.print("Temperature: ");    Serial.print(temperature);  Serial.println(" C");
-    temp2f =  (temperature * 9.0) / 5.0 + 32.0;
+    tempf =  (temperature * 9.0) / 5.0 + 32.0;
    
-    Serial.print("           : ");    Serial.print(temp2f);       Serial.println(" F");
+    Serial.print("           : ");    Serial.print(tempf);       Serial.println(" F");
 
     /* Then convert the atmospheric pressure, and SLP to altitude         */
     /* Update this next line with the current SLP for better results      */
@@ -175,13 +175,13 @@ void loop() {
 
   //Get sensor data
   float tempc = dht.readTemperature();
-  float tempf =  (tempc * 9.0) / 5.0 + 32.0;
+  float temp2f =  (tempc * 9.0) / 5.0 + 32.0;
   float humidity = dht.readHumidity();
   float dewptf = dewPoint(tempf, humidity);
 
   //local sensor data report
   Serial.println("+++++++++++++++++++++++++");
-  Serial.print("tempF=     ");  Serial.print(tempf);    Serial.println(" *F");
+  Serial.print("tempF=     ");  Serial.print(temp2f);    Serial.println(" *F");
   Serial.print("tempC=     ");  Serial.print(tempc);    Serial.println(" *C");
   Serial.print("dew point= ");  Serial.println(dewptf);
   Serial.print("humidity=  ");  Serial.println(humidity);
@@ -219,7 +219,7 @@ void loop() {
   client.print("&humidity=");      client.print(humidity);
   client.print("&baromin=");       client.print(baromin);
 
-  client.print("&softwaretype=");  client.print("ESP8266%20version "); client.print(versionstring);
+  client.print("&softwaretype=");  client.print("ESP8266%20WeatherStation02%20version%20"); client.print(versionstring);
   client.print("&action=");        client.print("updateraw");
   client.println(" HTTP/1.1");
   client.print("Host: ");          client.println(wu_host);
